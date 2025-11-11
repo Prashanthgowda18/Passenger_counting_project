@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Passenger Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            position: relative;
+        }
+
+        .logout-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .header h2 {
+            font-size: 1.3rem;
+            color: #fff;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .dashboard-link {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .bus-info-section {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .bus-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .bus-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .bus-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .bus-status {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-normal {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-full {
+            background: #f8d7da;
+            color: #721c24;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .bus-details {
+            margin-top: 15px;
+        }
+
+        .passenger-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .inside-count {
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .capacity-count {
+            color: #666;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #66BB6A);
+            transition: width 0.5s, background 0.3s;
+        }
+
+        .progress-fill.warning {
+            background: linear-gradient(90deg, #FF9800, #FFB74D);
+        }
+
+        .progress-fill.danger {
+            background: linear-gradient(90deg, #f44336, #e57373);
+        }
+
+        .bus-location {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .bus-type {
+            font-size: 0.9rem;
+            color: #888;
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+
+        .btn-allocate {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+        }
+
+        .btn-allocate:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.6);
+        }
+
+        .btn-allocate:active {
+            transform: translateY(0);
+        }
+
+        .btn-allocate.disabled {
+            background: linear-gradient(135deg, #4CAF50, #66BB6A);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-allocate.disabled:hover {
+            transform: none;
+        }
+
+        .alerts-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+        }
+
+        .alerts-section h3 {
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .alert.bus-full {
+            background: linear-gradient(45deg, #FFE0B2, #FFB74D);
+            border-left: 5px solid #FF9800;
+        }
+
+        .alert.door-close {
+            background: linear-gradient(45deg, #C8E6C9, #81C784);
+            border-left: 5px solid #4CAF50;
+        }
+
+        .alert-icon {
+            font-size: 1.8rem;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-text {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .alert-time {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .no-alerts {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            padding: 30px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: white;
+            opacity: 0.8;
+        }
+
+        /* Allocation Page Styles */
+        .allocation-page {
+            display: none;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .allocation-page.active {
+            display: block;
+        }
+
+        .allocation-header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .allocation-header h2 {
+            color: #333;
+            font-size: 1.8rem;
+        }
+
+        .btn-back {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-back:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .full-bus-info {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border-left: 5px solid #f44336;
+        }
+
+        .full-bus-info h3 {
+            color: #f44336;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .full-bus-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .detail-label {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .standby-buses-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .standby-buses-section h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .standby-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .standby-card {
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .standby-card:hover {
+            border-color: #FF9800;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(255, 152, 0, 0.3);
+        }
+
+        .standby-card.selected {
+            border-color: #FF9800;
+            background: linear-gradient(135deg, #FFF3E0, white);
+            box-shadow: 0 8px 20px rgba(255, 152, 0, 0.4);
+        }
+
+        .standby-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .standby-number {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .distance-badge {
+            background: #FF9800;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .standby-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            color: #666;
+        }
+
+        .btn-deploy {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4CAF50, #66BB6A);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-deploy:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6);
+        }
+
+        .btn-deploy:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .standby-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .full-bus-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Logout Button - Top Right Corner -->
+    <div class="logout-container">
+        <a href="/logout" class="dashboard-link">🚪 Logout</a>
+    </div>
+
+    <!-- Main Dashboard Page -->
+    <div class="dashboard" id="mainDashboard">
+        <div class="header">
+            <h1>🚍 Bus Passenger Dashboard</h1>
+            <p>Real-time monitoring and capacity management</p>
+            <h2>Currently Running Bus</h2>
+        </div>
+
+        <div class="bus-info-section">
+            <div class="bus-card">
+                <div class="bus-header">
+                    <div class="bus-number" id="bus-number">KA42BUS1</div>
+                    <div class="bus-status status-normal" id="bus-status">Normal</div>
+                </div>
+                <div class="bus-details">
+                    <div class="passenger-info">
+                        <span class="inside-count">Inside: <span id="current-passengers">0</span></span>
+                        <span class="capacity-count">Capacity: <span id="bus-capacity">10</span></span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="bus-location">📍 <span id="bus-location">Rajanukunte</span></div>
+                    <div class="bus-type">Active Bus</div>
+                    <button class="btn-allocate" id="allocate-btn" onclick="openAllocationPage()">
+                        🚨 Allocate Extra Bus
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="alerts-section">
+            <h3>🚨 System Alerts - Extra Bus Allocations</h3>
+            <div id="alerts-container">
+                <div class="no-alerts">No allocations yet</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Real-time data updated via MQTT • Last update: <span id="last-update">-</span></p>
+        </div>
+    </div>
+
+    <!-- Allocation Page -->
+    <div class="allocation-page" id="allocationPage">
+        <div class="allocation-header">
+            <h2>🚨 Allocate Extra Bus</h2>
+            <button class="btn-back" onclick="backToDashboard()">← Back to Dashboard</button>
+        </div>
+
+        <div class="full-bus-info">
+            <h3>⚠️ Bus at Full Capacity</h3>
+            <div class="full-bus-details">
+                <div class="detail-item">
+                    <span class="detail-label">Bus Number</span>
+                    <span class="detail-value" id="full-bus-number">KA42BUS1</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Current Location</span>
+                    <span class="detail-value" id="full-bus-location">📍 Rajanukunte</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Passengers</span>
+                    <span class="detail-value" id="full-bus-passengers">10/10</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Status</span>
+                    <span class="detail-value" style="color: #f44336;">FULL CAPACITY</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="standby-buses-section">
+            <h3>Available Standby Buses</h3>
+            <p style="color: #666; margin-bottom: 20px;">Select a standby bus to deploy to the overcrowded location:</p>
+            
+            <div class="standby-grid" id="standby-grid">
+                <!-- Standby buses will be populated here -->
+            </div>
+
+            <button class="btn-deploy" id="deploy-btn" onclick="deployBus()" disabled>
+                📢 Send Deployment Order
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+        let selectedStandbyBus = null;
+
+        // Sample standby buses data
+        const standbyBuses = [
+            {
+                id: 'KA42STANDBY1',
+                location: 'Depot A - Yelahanka',
+                distance: 2.5,
+                status: 'Ready'
+            },
+            {
+                id: 'KA42STANDBY2',
+                location: 'Depot B - Hebbal',
+                distance: 3.8,
+                status: 'Ready'
+            },
+            {
+                id: 'KA42STANDBY3',
+                location: 'Depot C - Nagawara',
+                distance: 5.2,
+                status: 'Ready'
+            }
+        ];
+
+        // Handle real-time updates
+        socket.on('update', function(data) {
+            updateDashboard(data);
+        });
+
+        function updateDashboard(data) {
+            // Update passenger count
+            const passengers = data.count_inside || 0;
+            const capacity = 10;
+            document.getElementById('current-passengers').textContent = passengers;
+
+            // Update progress bar
+            const percentage = (passengers / capacity) * 100;
+            const progressFill = document.getElementById('progress-fill');
+            progressFill.style.width = percentage + '%';
+
+            // Update progress bar color
+            progressFill.className = 'progress-fill';
+            if (percentage >= 100) {
+                progressFill.classList.add('danger');
+            } else if (percentage >= 80) {
+                progressFill.classList.add('warning');
+            }
+
+            // Update status
+            const statusEl = document.getElementById('bus-status');
+            const allocateBtn = document.getElementById('allocate-btn');
+            
+            if (passengers >= capacity) {
+                statusEl.textContent = 'Full';
+                statusEl.className = 'bus-status status-full';
+                allocateBtn.classList.remove('disabled');
+                allocateBtn.textContent = '🚨 Allocate Extra Bus';
+            } else {
+                statusEl.textContent = 'Normal';
+                statusEl.className = 'bus-status status-normal';
+                allocateBtn.classList.add('disabled');
+                allocateBtn.textContent = '✓ Bus Operating Normally';
+            }
+
+            // Update timestamp
+            const timestamp = new Date(data.timestamp * 1000);
+            document.getElementById('last-update').textContent = timestamp.toLocaleTimeString();
+
+            // Update alerts
+            updateAlerts(data.alerts);
+        }
+
+        function updateAlerts(alerts) {
+            const container = document.getElementById('alerts-container');
+
+            if (!alerts || alerts.length === 0) {
+                container.innerHTML = '<div class="no-alerts">No active alerts</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+
+            alerts.slice(-5).reverse().forEach(alert => {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert ${alert.type}`;
+
+                let icon = '🚨';
+                if (alert.type === 'door_close') icon = '🚪';
+                if (alert.type === 'bus-full') icon = '⚠️';
+
+                alertDiv.innerHTML = `
+                    <div class="alert-icon">${icon}</div>
+                    <div class="alert-content">
+                        <div class="alert-text">${alert.message}</div>
+                        <div class="alert-time">${new Date(alert.timestamp * 1000).toLocaleString()}</div>
+                    </div>
+                `;
+
+                container.appendChild(alertDiv);
+            });
+        }
+
+        function openAllocationPage() {
+            const passengers = parseInt(document.getElementById('current-passengers').textContent);
+            const capacity = parseInt(document.getElementById('bus-capacity').textContent);
+
+            if (passengers < capacity) {
+                alert('Bus is not at full capacity yet. Allocation not needed.');
+                return;
+            }
+
+            // Update full bus info
+            document.getElementById('full-bus-number').textContent = document.getElementById('bus-number').textContent;
+            document.getElementById('full-bus-location').textContent = '📍 ' + document.getElementById('bus-location').textContent;
+            document.getElementById('full-bus-passengers').textContent = passengers + '/' + capacity;
+
+            // Populate standby buses
+            const standbyGrid = document.getElementById('standby-grid');
+            standbyGrid.innerHTML = '';
+
+            standbyBuses.forEach(bus => {
+                const card = document.createElement('div');
+                card.className = 'standby-card';
+                card.onclick = () => selectStandbyBus(bus.id, card);
+
+                card.innerHTML = `
+                    <div class="standby-header">
+                        <div class="standby-number">${bus.id}</div>
+                        <div class="distance-badge">${bus.distance} km</div>
+                    </div>
+                    <div class="standby-info">
+                        <div>📍 ${bus.location}</div>
+                        <div>⚡ Status: ${bus.status}</div>
+                        <div>⏱️ ETA: ~${Math.ceil(bus.distance * 5)} mins</div>
+                    </div>
+                `;
+
+                standbyGrid.appendChild(card);
+            });
+
+            // Switch pages
+            document.getElementById('mainDashboard').style.display = 'none';
+            document.getElementById('allocationPage').classList.add('active');
+        }
+
+        function backToDashboard() {
+            document.getElementById('mainDashboard').style.display = 'block';
+            document.getElementById('allocationPage').classList.remove('active');
+            selectedStandbyBus = null;
+            document.getElementById('deploy-btn').disabled = true;
+        }
+
+        function selectStandbyBus(busId, cardElement) {
+            // Remove selection from all cards
+            document.querySelectorAll('.standby-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Select this card
+            cardElement.classList.add('selected');
+            selectedStandbyBus = busId;
+
+            // Enable deploy button
+            document.getElementById('deploy-btn').disabled = false;
+        }
+
+        function deployBus() {
+            if (!selectedStandbyBus) {
+                alert('Please select a standby bus');
+                return;
+            }
+
+            const bus = standbyBuses.find(b => b.id === selectedStandbyBus);
+            const fullBusNumber = document.getElementById('full-bus-number').textContent;
+            const fullBusLocation = document.getElementById('full-bus-location').textContent;
+
+            // Show confirmation
+            if (confirm(`Deploy ${selectedStandbyBus} to ${fullBusLocation}?\n\nEstimated arrival: ${Math.ceil(bus.distance * 5)} minutes`)) {
+                
+                // Simulate deployment notification
+                alert(`✅ Deployment Order Sent!\n\n${selectedStandbyBus} has been notified to move to ${fullBusLocation}\n\nThe driver will receive:\n- Route details\n- Current location coordinates\n- Expected arrival time\n\nStatus: En route to location`);
+
+                // Go back to dashboard
+                backToDashboard();
+
+                // Add allocation alert
+                const newAlert = {
+                    type: 'allocation',
+                    busNumber: selectedStandbyBus,
+                    mainBusNumber: fullBusNumber,
+                    timestamp: Date.now() / 1000
+                };
+
+                // Add alert to dashboard
+                setTimeout(() => {
+                    const container = document.getElementById('alerts-container');
+                    if (container.querySelector('.no-alerts')) {
+                        container.innerHTML = '';
+                    }
+
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert door-close';
+                    alertDiv.innerHTML = `
+                        <div class="alert-icon">✅</div>
+                        <div class="alert-content">
+                            <div class="alert-text"><strong>Extra Bus Allocated:</strong> ${newAlert.busNumber}</div>
+                            <div class="alert-time">${new Date().toLocaleString()}</div>
+                        </div>
+                    `;
+                    container.insertBefore(alertDiv, container.firstChild);
+                }, 500);
+            }
+        }
+
+        // Simulate data for testing
+        function simulateData() {
+            const testData = {
+                count_inside: Math.floor(Math.random() * 11),
+                timestamp: Date.now() / 1000,
+                alerts: []
+            };
+
+            if (testData.count_inside >= 10) {
+                testData.alerts.push({
+                    type: 'bus-full',
+                    message: 'Bus has reached full capacity (10/10). Extra bus allocation recommended.',
+                    timestamp: testData.timestamp
+                });
+            }
+
+            updateDashboard(testData);
+        }
+
+        // Demo simulation is disabled by default to stop automatic passenger updates.
+        // To enable local demo updates for testing, set DEBUG_SIMULATION = true.
+        const DEBUG_SIMULATION = false;
+
+        if (DEBUG_SIMULATION) {
+            // Initialize with test data
+            simulateData();
+
+            // Update every 5 seconds for demo
+            setInterval(simulateData, 5000);
+        }
+    </script>
+</body>
+</html>
