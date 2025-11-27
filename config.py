@@ -19,7 +19,7 @@ CAPACITY_THRESHOLD = 10  # Bus capacity is 10 passengers
 DOOR_CLOSE_THRESHOLD = 10  # trigger door close alert above this count
 
 # MQTT settings
-MQTT_BROKER = "localhost"
+MQTT_BROKER = "broker.hivemq.com"
 MQTT_PORT = 1883
 MQTT_TOPIC = "transport/bus1/passenger_count"
 MQTT_TOPIC_AUTHORITIES = "transport/bus1/authorities"  # alerts to authorities
@@ -33,4 +33,4 @@ ENGINE_STOP_PIN = 27
 PUBLISH_INTERVAL_SEC = 5
 
 # Dashboard URL
-DASHBOARD_LINK = "http://localhost:5000/"
+DASHBOARD_LINK = "http://127.0.0.1:5000/"

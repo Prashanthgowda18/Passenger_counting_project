@@ -5,6 +5,7 @@ import json
 import time
 from config import MQTT_BROKER, MQTT_PORT, MQTT_TOPIC, CAPACITY_THRESHOLD
 
+print("Starting dashboard app...")
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Change this to a secure key
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -37,14 +38,9 @@ def on_message(client, userdata, msg):
                 current_data['count_inside'] = payload.get('total_entered', 0)
             elif event == 'bus_full':
                 current_data['status'] = 'full'
-                current_data['alerts'].append({
-                    'type': 'bus_full',
-                    'message': 'Bus is full! Requesting extra bus.',
-                    'timestamp': payload.get('timestamp', int(time.time()))
-                })
         elif 'count' in payload:
             current_data['count_inside'] = payload['count']
-            if current_data['count_inside'] >= CAPACITY_THRESHOLD:
+            if current_data['count_inside'] == CAPACITY_THRESHOLD:
                 current_data['status'] = 'full'
             else:
                 current_data['status'] = 'normal'
@@ -65,6 +61,7 @@ mqtt_client.on_message = on_message
 try:
     mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
     mqtt_client.loop_start()
+    print("MQTT client connected and loop started")
 except Exception as e:
     print(f"MQTT connection failed: {e}")
 
@@ -81,8 +78,8 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        # Simple demo authentication (admin/admin123)
-        if username == 'admin' and password == 'admin123':
+        # Basic authentication with demo credentials
+        if username == 'admin' and password == 'password':
             session['username'] = username
             return redirect(url_for('index'))
         else:
@@ -93,6 +90,12 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
+@app.route('/extra-buses')
+def extra_buses():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    return render_template('extra_buses.html')
 
 @app.route('/api/status')
 def api_status():
@@ -108,4 +111,4 @@ def handle_disconnect():
     print('Client disconnected')
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    socketio.run(app, host='127.0.0.1', port=5000, debug=True)

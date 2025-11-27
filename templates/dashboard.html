@@ -20,10 +20,38 @@
             position: relative;
         }
 
-        .logout-container {
+        .logo-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .logo-left {
+            width: 200px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .bmtc-container {
             position: fixed;
             top: 20px;
             right: 20px;
+            z-index: 1000;
+        }
+
+        .bmtc-right {
+            width: 200px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logout-container {
+            position: fixed;
+            top: 20px;
+            right:250px;
             z-index: 1000;
         }
 
@@ -37,6 +65,7 @@
             text-align: center;
             margin-bottom: 30px;
             color: white;
+            margin-top: 60px;
         }
 
         .header h1 {
@@ -92,6 +121,8 @@
             border: 1px solid rgba(255, 255, 255, 0.18);
             width: 100%;
             max-width: 500px;
+            flex: 1;
+            min-width: 300px;
         }
 
         .bus-header {
@@ -506,6 +537,16 @@
     </style>
 </head>
 <body>
+    <!-- BMTC Logo - Top Left Corner -->
+    <div class="logo-container">
+        <img src="/static/bmtc_logo.jpg" alt="BMTC Logo" class="logo-left">
+    </div>
+
+    <!-- BMTC Text - Top Right Corner -->
+    <div class="bmtc-container">
+        <img src="/static/bmtc.png" alt="BMTC" class="bmtc-right">
+    </div>
+
     <!-- Logout Button - Top Right Corner -->
     <div class="logout-container">
         <a href="/logout" class="dashboard-link">🚪 Logout</a>
@@ -513,6 +554,8 @@
 
     <!-- Main Dashboard Page -->
     <div class="dashboard" id="mainDashboard">
+        <div class="logo-header">
+            
         <div class="header">
             <h1>🚍 Bus Passenger Dashboard</h1>
             <p>Real-time monitoring and capacity management</p>
@@ -535,17 +578,44 @@
                     </div>
                     <div class="bus-location">📍 <span id="bus-location">Rajanukunte</span></div>
                     <div class="bus-type">Active Bus</div>
-                    <button class="btn-allocate" id="allocate-btn" onclick="openAllocationPage()">
-                        🚨 Allocate Extra Bus
-                    </button>
+                    <div id="normal-status" class="btn-allocate disabled" style="display: block; background: linear-gradient(135deg, #4CAF50, #66BB6A); cursor: default;">
+                        ✓ Bus Operating Normally
+                    </div>
+                    <a href="/extra-buses" id="allocate-btn" class="btn-allocate" style="display: none;">
+                        🚨 Allocate Available Extra Bus
+                    </a>
+                </div>
+            </div>
+            <div class="bus-card" style="margin-left: 20px;">
+                <div class="bus-header">
+                    <div class="bus-number">EXTRA BUSES</div>
+                    <div class="bus-status status-normal">Available</div>
+                </div>
+                <div class="bus-details">
+                    <div class="passenger-info">
+                        <span class="inside-count">Standby: <span id="standby-count">3</span></span>
+                        <span class="capacity-count">Ready: <span id="ready-count">3</span></span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%"></div>
+                    </div>
+                    <div class="bus-location">📍 Multiple Locations</div>
+                    <div class="bus-type">Reserve Fleet</div>
+                    <a href="/extra-buses" class="btn-allocate">
+                        🚍 View Available Extra Buses
+                    </a>
                 </div>
             </div>
         </div>
 
-        <div class="alerts-section">
-            <h3>🚨 System Alerts - Extra Bus Allocations</h3>
-            <div id="alerts-container">
-                <div class="no-alerts">No allocations yet</div>
+
+        <!-- Allocated Buses Display -->
+        <div class="allocated-buses-section">
+            <div class="alerts-section">
+                <div class="alerts-title">🚌 Currently Allocated Buses</div>
+                <div id="allocated-buses-container-dashboard">
+                    <div class="no-alerts">No buses currently allocated</div>
+                </div>
             </div>
         </div>
 
@@ -652,16 +722,18 @@
             const statusEl = document.getElementById('bus-status');
             const allocateBtn = document.getElementById('allocate-btn');
             
-            if (passengers >= capacity) {
+            if (passengers == capacity) {
                 statusEl.textContent = 'Full';
                 statusEl.className = 'bus-status status-full';
                 allocateBtn.classList.remove('disabled');
-                allocateBtn.textContent = '🚨 Allocate Extra Bus';
+                allocateBtn.style.display = 'block';
+                allocateBtn.textContent = '🚨 Allocate Available Extra Bus';
+                document.getElementById('normal-status').style.display = 'none';
             } else {
                 statusEl.textContent = 'Normal';
                 statusEl.className = 'bus-status status-normal';
-                allocateBtn.classList.add('disabled');
-                allocateBtn.textContent = '✓ Bus Operating Normally';
+                allocateBtn.style.display = 'none';
+                document.getElementById('normal-status').style.display = 'block';
             }
 
             // Update timestamp

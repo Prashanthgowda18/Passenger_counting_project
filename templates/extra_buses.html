@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Extra Buses</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            position: relative;
+        }
+
+        .logout-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .dashboard-link {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .extra-buses {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .back-link {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .buses-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+        }
+
+        .buses-section h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .description {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+
+        .buses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .bus-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .bus-card:hover {
+            border-color: #FF9800;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(255, 152, 0, 0.2);
+        }
+
+        .bus-card.selected {
+            border-color: #FF9800;
+            background: linear-gradient(135deg, #FFF3E0, white);
+            box-shadow: 0 8px 25px rgba(255, 152, 0, 0.3);
+        }
+
+        .bus-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .bus-number {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .status-badge {
+            background: #4CAF50;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .bus-info {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .bus-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: #555;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .capacity-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .capacity-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .capacity-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #66BB6A);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .deploy-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+        }
+
+        .deploy-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.6);
+        }
+
+        .deploy-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: white;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .buses-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Logout Button -->
+    <div class="logout-container">
+        <a href="/logout" class="dashboard-link">🚪 Logout</a>
+    </div>
+
+    <div class="extra-buses">
+        <div class="header">
+            <h1>🚍 Available Extra Buses</h1>
+            <p>Reserve Fleet - Ready for Deployment</p>
+        </div>
+
+        <a href="/" class="back-link">← Back to Dashboard</a>
+
+        <div class="buses-section">
+            <h2>Standby Buses</h2>
+            <p class="description">Select a standby bus to deploy when the main bus reaches capacity</p>
+
+            <div class="buses-grid" id="buses-grid">
+                <!-- Buses will be populated by JavaScript -->
+            </div>
+
+            <button class="deploy-btn" id="deploy-btn" onclick="deploySelectedBus()" disabled>
+                🚀 Deploy Selected Bus
+            </button>
+        </div>
+
+        <div class="buses-section" id="allocated-section" style="display: none;">
+            <h2>Currently Allocated Buses</h2>
+            <p class="description">Buses currently deployed to handle passenger overflow</p>
+
+            <div class="buses-grid" id="allocated-buses-grid">
+                <!-- Allocated buses will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Real-time bus availability • Updated automatically</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+        let selectedBusId = null;
+
+        // Sample standby buses data
+        let standbyBuses = [
+            {
+                id: 'KA42STANDBY1',
+                location: 'Depot A - Yelahanka',
+                distance: 2.5,
+                capacity: 45,
+                eta: '~12 mins',
+                status: 'Ready'
+            },
+            {
+                id: 'KA42STANDBY2',
+                location: 'Depot B - Hebbal',
+                distance: 3.8,
+                capacity: 45,
+                eta: '~19 mins',
+                status: 'Ready'
+            },
+            {
+                id: 'KA42STANDBY3',
+                location: 'Depot C - Nagawara',
+                distance: 5.2,
+                capacity: 45,
+                eta: '~26 mins',
+                status: 'Ready'
+            }
+
+        ];
+
+        // Allocated buses array
+        let allocatedBuses = [];
+
+        // Handle real-time updates
+        socket.on('update', function(data) {
+            // Update buses if needed
+        });
+
+        function loadBuses() {
+            const grid = document.getElementById('buses-grid');
+            grid.innerHTML = '';
+
+            standbyBuses.forEach(bus => {
+                const card = document.createElement('div');
+                card.className = 'bus-card';
+                card.onclick = () => selectBus(bus.id, card);
+
+                card.innerHTML = `
+                    <div class="bus-header">
+                        <div class="bus-number">${bus.id}</div>
+                        <div class="status-badge">${bus.status}</div>
+                    </div>
+                    <div class="bus-info">
+                        <div class="bus-detail">
+                            <span class="detail-label">📍 Location:</span>
+                            <span class="detail-value">${bus.location}</span>
+                        </div>
+                        <div class="bus-detail">
+                            <span class="detail-label">📏 Distance:</span>
+                            <span class="detail-value">${bus.distance} km</span>
+                        </div>
+                        <div class="bus-detail">
+                            <span class="detail-label">⏰ ETA:</span>
+                            <span class="detail-value">${bus.eta}</span>
+                        </div>
+                        <div class="bus-detail">
+                            <span class="detail-label">👥 Capacity:</span>
+                            <span class="detail-value">${bus.capacity} seats</span>
+                        </div>
+                    </div>
+                    <div class="capacity-info">
+                        <div class="capacity-bar">
+                            <div class="capacity-fill" style="width: 0%"></div>
+                        </div>
+                        <div style="text-align: center; font-size: 0.9rem; color: #666;">
+                            Current Load: 0/${bus.capacity} passengers
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function loadAllocatedBuses() {
+            const grid = document.getElementById('allocated-buses-grid');
+            grid.innerHTML = '';
+
+            if (allocatedBuses.length > 0) {
+                document.getElementById('allocated-section').style.display = 'block';
+            } else {
+                document.getElementById('allocated-section').style.display = 'none';
+                return;
+            }
+
+            allocatedBuses.forEach(bus => {
+                const card = document.createElement('div');
+                card.className = 'bus-card';
+                card.style.borderColor = '#4CAF50';
+                card.style.background = 'linear-gradient(135deg, #E8F5E8, white)';
+
+                card.innerHTML = `
+                    <div class="bus-header">
+                        <div class="bus-number">${bus.id}</div>
+                        <div class="status-badge" style="background: #4CAF50;">Allocated</div>
+                    </div>
+                    <div class="bus-info">
+                        <div class="bus-detail">
+                            <span class="detail-label">📍 Deployed to:</span>
+                            <span class="detail-value">Main Route</span>
+                        </div>
+                        <div class="bus-detail">
+                            <span class="detail-label">⏰ Deployed at:</span>
+                            <span class="detail-value">${new Date().toLocaleTimeString()}</span>
+                        </div>
+                        <div class="bus-detail">
+                            <span class="detail-label">👥 Capacity:</span>
+                            <span class="detail-value">${bus.capacity} seats</span>
+                        </div>
+                        <div class="bus-detail">
+                            <span class="detail-label">📊 Status:</span>
+                            <span class="detail-value">En Route</span>
+                        </div>
+                    </div>
+                    <div class="capacity-info">
+                        <div class="capacity-bar">
+                            <div class="capacity-fill" style="width: 0%; background: linear-gradient(90deg, #4CAF50, #66BB6A);"></div>
+                        </div>
+                        <div style="text-align: center; font-size: 0.9rem; color: #666;">
+                            Current Load: 0/${bus.capacity} passengers
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function selectBus(busId, cardElement) {
+            // Remove selection from all cards
+            document.querySelectorAll('.bus-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Select this card
+            cardElement.classList.add('selected');
+            selectedBusId = busId;
+
+            // Enable deploy button
+            document.getElementById('deploy-btn').disabled = false;
+        }
+
+        function deploySelectedBus() {
+            if (!selectedBusId) {
+                alert('Please select a bus to deploy');
+                return;
+            }
+
+            const bus = standbyBuses.find(b => b.id === selectedBusId);
+
+            if (confirm(`🚀 Deploy ${selectedBusId}?\n\n📍 Location: ${bus.location}\n📏 Distance: ${bus.distance} km\n⏰ ETA: ${bus.eta}\n👥 Capacity: ${bus.capacity} seats\n\nThis bus will be dispatched to assist with passenger overflow.`)) {
+
+                alert(`✅ Deployment Successful!\n\n🚍 ${selectedBusId} has been dispatched from ${bus.location}\n\n📡 Driver notified via mobile app\n🗺️ Route automatically calculated\n⏱️ Expected arrival: ${bus.eta}\n\nThe bus will arrive with full capacity to handle additional passengers.`);
+
+                // Reset selection
+                document.querySelectorAll('.bus-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                selectedBusId = null;
+                document.getElementById('deploy-btn').disabled = true;
+
+                // Optionally redirect back to dashboard
+                // window.location.href = '/';
+            }
+        }
+
+        // Initialize
+        loadBuses();
+
+        // Handle socket connection
+        socket.on('connect', function() {
+            console.log('Connected to dashboard');
+        });
+
+        socket.on('disconnect', function() {
+            console.log('Disconnected from dashboard');
+        });
+    </script>
+</body>
+</html>
