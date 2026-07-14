@@ -128,7 +128,8 @@ def main(video_source=None):
         print("Cannot read from source")
         return
     H, W = frame.shape[:2]
-    line_x = int(W * LINE_POSITION)  # Vertical line on right side
+    right_line_x = int(W * RIGHT_LINE_POSITION)  # Vertical line on right side for entering
+    left_line_x = int(W * LEFT_LINE_POSITION)    # Vertical line on left side for exiting
 
     while True:
         ret, frame = cap.read()
@@ -142,8 +143,9 @@ def main(video_source=None):
         # Update tracker
         objects = tracker.update(rects)
 
-        # Draw vertical counting line on right side (smaller line)
-        cv2.line(frame, (line_x, 0), (line_x, H), (0, 255, 255), 1)
+        # Draw vertical counting lines
+        cv2.line(frame, (right_line_x, 0), (right_line_x, H), (0, 255, 255), 1)  # Right line for entering (yellow)
+        cv2.line(frame, (left_line_x, 0), (left_line_x, H), (255, 0, 255), 1)   # Left line for exiting (magenta)
 
         # Loop over tracked objects
         for objectID, tobj in list(objects.items()):
@@ -175,7 +177,7 @@ def main(video_source=None):
 
 
                 # Crossing from left to right → entering (more sensitive detection)
-                if (prev_x < line_x and curr_x >= line_x and
+                if (prev_x < right_line_x and curr_x >= right_line_x and
                     not tobj.entered and movement >= MIN_MOVEMENT_PIXELS):
                     tobj.entered = True
                     count_inside += 1
@@ -188,6 +190,26 @@ def main(video_source=None):
                         alert_payload = {
                             "event": "passenger_entered",
                             "total_entered": total_entered,
+                            "timestamp": int(time.time())
+                        }
+                        try:
+                            client.publish(MQTT_TOPIC, json.dumps(alert_payload), qos=1, retain=False)
+                        except Exception as e:
+                            print("MQTT alert publish failed:", e)
+
+
+                # Crossing from right to left → exiting
+                elif (prev_x >= left_line_x and curr_x < left_line_x and
+                      tobj.entered and movement >= MIN_MOVEMENT_PIXELS):
+                    tobj.entered = False
+                    count_inside -= 1
+                    total_exited += 1
+                    print(f"Passenger {tobj.passenger_number} EXITED. Total Exited: {total_exited}")
+                    # Send immediate MQTT alert with QoS 1
+                    if client:
+                        alert_payload = {
+                            "event": "passenger_exited",
+                            "total_exited": total_exited,
                             "timestamp": int(time.time())
                         }
                         try:
@@ -265,6 +287,17 @@ def main(video_source=None):
     if client:
         client.loop_stop()
         client.disconnect()
+
+    print("Video processing completed. Dashboard server remains active.")
+    print(f"Dashboard link: {DASHBOARD_LINK}")
+    print("Press Ctrl+C to stop the dashboard server.")
+
+    # Keep the dashboard server running
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("Dashboard server stopped.")
 
 if __name__ == "__main__":
     main()

@@ -17,6 +17,8 @@ current_data = {
     'capacity': CAPACITY_THRESHOLD,
     'status': 'normal',
     'alerts': [],
+    'allocated_buses': [],
+    'allocation_notification': False,
     'timestamp': int(time.time())
 }
 
@@ -109,6 +111,26 @@ def handle_connect():
 @socketio.on('disconnect')
 def handle_disconnect():
     print('Client disconnected')
+
+@socketio.on('show_allocation_notification')
+def handle_show_notification():
+    global current_data
+    current_data['allocation_notification'] = True
+    socketio.emit('allocation_notification_shown', True)
+
+@socketio.on('hide_allocation_notification')
+def handle_hide_notification():
+    global current_data
+    current_data['allocation_notification'] = False
+    socketio.emit('allocation_notification_hidden', True)
+
+@socketio.on('bus_deployed')
+def handle_bus_deployed(data):
+    global current_data
+    current_data['allocated_buses'].append(data)
+    current_data['allocation_notification'] = False
+    socketio.emit('update', current_data)
+    print(f"Bus deployed: {data}")
 
 if __name__ == '__main__':
     socketio.run(app, host='127.0.0.1', port=5000, debug=True)

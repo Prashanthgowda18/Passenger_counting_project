@@ -557,9 +557,14 @@
         <div class="logo-header">
             
         <div class="header">
-            <h1>🚍 Bus Passenger Dashboard</h1>
+            <h1> Bus Passenger Dashboard</h1>
             <p>Real-time monitoring and capacity management</p>
             <h2>Currently Running Bus</h2>
+        </div>
+
+        <!-- Allocation Notification -->
+        <div id="allocation-notification" class="notification" style="display: none; background: rgba(255, 193, 7, 0.9); color: #000; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; font-weight: 600;">
+            🚍 Extra bus allocation in progress...
         </div>
 
         <div class="bus-info-section">
@@ -581,7 +586,7 @@
                     <div id="normal-status" class="btn-allocate disabled" style="display: block; background: linear-gradient(135deg, #4CAF50, #66BB6A); cursor: default;">
                         ✓ Bus Operating Normally
                     </div>
-                    <a href="/extra-buses" id="allocate-btn" class="btn-allocate" style="display: none;">
+                    <a href="/extra-buses" id="allocate-btn" class="btn-allocate" style="display: none;" onclick="showAllocationNotification()">
                         🚨 Allocate Available Extra Bus
                     </a>
                 </div>
@@ -612,7 +617,7 @@
         <!-- Allocated Buses Display -->
         <div class="allocated-buses-section">
             <div class="alerts-section">
-                <div class="alerts-title">🚌 Currently Allocated Buses</div>
+                <h3> Currently Allocated Buses</h3>
                 <div id="allocated-buses-container-dashboard">
                     <div class="no-alerts">No buses currently allocated</div>
                 </div>
@@ -742,6 +747,14 @@
 
             // Update alerts
             updateAlerts(data.alerts);
+
+            // Update allocation notification
+            if (data.allocation_notification) {
+                document.getElementById('allocation-notification').style.display = 'block';
+            }
+
+            // Update allocated buses display
+            updateAllocatedBuses(data.allocated_buses);
         }
 
         function updateAlerts(alerts) {
@@ -823,6 +836,23 @@
             selectedStandbyBus = null;
             document.getElementById('deploy-btn').disabled = true;
         }
+
+        function showAllocationNotification() {
+            socket.emit('show_allocation_notification');
+        }
+
+        function hideAllocationNotification() {
+            socket.emit('hide_allocation_notification');
+        }
+
+        // Handle notification updates
+        socket.on('allocation_notification_shown', function() {
+            document.getElementById('allocation-notification').style.display = 'block';
+        });
+
+        socket.on('allocation_notification_hidden', function() {
+            document.getElementById('allocation-notification').style.display = 'none';
+        });
 
         function selectStandbyBus(busId, cardElement) {
             // Remove selection from all cards

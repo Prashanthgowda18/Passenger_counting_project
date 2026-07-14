@@ -277,7 +277,7 @@
             </div>
 
             <button class="deploy-btn" id="deploy-btn" onclick="deploySelectedBus()" disabled>
-                🚀 Deploy Selected Bus
+                 Deploy Selected Bus
             </button>
         </div>
 
@@ -299,13 +299,14 @@
     <script>
         const socket = io();
         let selectedBusId = null;
+        let busStatus = 'normal'; // Track the main bus status
 
         // Sample standby buses data
         let standbyBuses = [
             {
                 id: 'KA42STANDBY1',
                 location: 'Depot A - Yelahanka',
-                distance: 2.5,
+                distance: 8.5,
                 capacity: 45,
                 eta: '~12 mins',
                 status: 'Ready'
@@ -313,7 +314,7 @@
             {
                 id: 'KA42STANDBY2',
                 location: 'Depot B - Hebbal',
-                distance: 3.8,
+                distance: 20,
                 capacity: 45,
                 eta: '~19 mins',
                 status: 'Ready'
@@ -321,7 +322,7 @@
             {
                 id: 'KA42STANDBY3',
                 location: 'Depot C - Nagawara',
-                distance: 5.2,
+                distance: 25,
                 capacity: 45,
                 eta: '~26 mins',
                 status: 'Ready'
@@ -334,7 +335,17 @@
 
         // Handle real-time updates
         socket.on('update', function(data) {
-            // Update buses if needed
+            busStatus = data.status;
+            const deployBtn = document.getElementById('deploy-btn');
+            if (busStatus === 'full') {
+                deployBtn.disabled = false;
+                deployBtn.textContent = 'Deploy Selected Bus';
+                deployBtn.style.background = 'linear-gradient(135deg, #FF9800, #F57C00)';
+            } else {
+                deployBtn.disabled = true;
+                deployBtn.textContent = 'Deploy Available When Bus is Full';
+                deployBtn.style.background = '#ccc';
+            }
         });
 
         function loadBuses() {
@@ -387,10 +398,19 @@
             const grid = document.getElementById('allocated-buses-grid');
             grid.innerHTML = '';
 
-            if (allocatedBuses.length > 0) {
-                document.getElementById('allocated-section').style.display = 'block';
-            } else {
-                document.getElementById('allocated-section').style.display = 'none';
+            // Always show the allocated section
+            document.getElementById('allocated-section').style.display = 'block';
+
+            if (allocatedBuses.length === 0) {
+                // Show "No buses currently allocated" message
+                grid.innerHTML = `
+                    <div class="bus-card" style="text-align: center; border-color: #ccc; background: #f9f9f9;">
+                        <div style="padding: 40px; color: #666;">
+                            <h3 style="margin: 0 0 10px 0; color: #999;">No buses currently allocated</h3>
+                            <p style="margin: 0; font-size: 0.9rem;">Deployed buses will appear here when allocated to handle passenger overflow.</p>
+                        </div>
+                    </div>
+                `;
                 return;
             }
 
@@ -451,27 +471,55 @@
             document.getElementById('deploy-btn').disabled = false;
         }
 
+        function hideAllocationNotification() {
+            // Send message to dashboard to hide notification
+            socket.emit('hide_allocation_notification');
+        }
+
         function deploySelectedBus() {
+            if (busStatus !== 'full') {
+                alert('🚫 Deployment not allowed!\n\nThe main bus must be at full capacity before deploying extra buses.');
+                return;
+            }
+
             if (!selectedBusId) {
                 alert('Please select a bus to deploy');
                 return;
             }
 
-            const bus = standbyBuses.find(b => b.id === selectedBusId);
+            const busIndex = standbyBuses.findIndex(b => b.id === selectedBusId);
+            if (busIndex === -1) {
+                alert('Bus not found');
+                return;
+            }
+
+            const bus = standbyBuses[busIndex];
 
             if (confirm(`🚀 Deploy ${selectedBusId}?\n\n📍 Location: ${bus.location}\n📏 Distance: ${bus.distance} km\n⏰ ETA: ${bus.eta}\n👥 Capacity: ${bus.capacity} seats\n\nThis bus will be dispatched to assist with passenger overflow.`)) {
 
+                // Move bus from standby to allocated
+                standbyBuses.splice(busIndex, 1);
+                allocatedBuses.push(bus);
+
+                // Refresh both sections
+                loadBuses();
+                loadAllocatedBuses();
+
+                // Emit deployment to dashboard
+                socket.emit('bus_deployed', {
+                    id: bus.id,
+                    deployedTo: 'Rajanukunte',
+                    deployedAt: new Date().toLocaleTimeString(),
+                    capacity: bus.capacity,
+                    status: 'En Route'
+                });
+
                 alert(`✅ Deployment Successful!\n\n🚍 ${selectedBusId} has been dispatched from ${bus.location}\n\n📡 Driver notified via mobile app\n🗺️ Route automatically calculated\n⏱️ Expected arrival: ${bus.eta}\n\nThe bus will arrive with full capacity to handle additional passengers.`);
 
-                // Reset selection
-                document.querySelectorAll('.bus-card').forEach(card => {
-                    card.classList.remove('selected');
-                });
+                // Reset selection and hide notification
                 selectedBusId = null;
                 document.getElementById('deploy-btn').disabled = true;
-
-                // Optionally redirect back to dashboard
-                // window.location.href = '/';
+                hideAllocationNotification();
             }
         }
 

@@ -5,8 +5,9 @@ VIDEO_SOURCE = "passenger_video.mp4"
 MODEL_PATH = "yolov8n.pt"  # lightweight YOLOv8
 CONFIDENCE = 0.3  # Lower confidence for better detection
 
-# Counting line (relative position) - NOW ON RIGHT SIDE
-LINE_POSITION = 0.8  # right side of frame (0 = left, 1 = right)
+# Counting lines (relative positions)
+RIGHT_LINE_POSITION = 0.8  # right side of frame for entering (0 = left, 1 = right)
+LEFT_LINE_POSITION = 0.2   # left side of frame for exiting
 DIRECTION_TOLERANCE = 10  # pixel tolerance for direction
 RIGHT_SIDE_THRESHOLD = 0.6  # threshold for right side movement (0.6 = 60% from left)
 
