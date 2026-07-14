@@ -1,4 +1,4 @@
-# Passenger Counting Project
+# Passenger Counting Project!
 
 Lightweight bus passenger counting system with a real-time web dashboard and MQTT integration. The project uses a YOLO model for person detection, a centroid tracker for object tracking, and a Flask + Socket.IO dashboard for live updates.
 
